@@ -7,11 +7,13 @@ export class AuthService {
 
   constructor() {
     this.client
-      .setEndpoint(conf.appwrite) // Your Appwrite Endpoint
-      .setProject(conf.projectId); // Your project ID
+      .setEndpoint(conf.appwrite) // Appwrite Endpoint
+      .setProject(conf.projectId); // Project ID
+
     this.account = new Account(this.client);
   }
 
+  // Create Account + Auto Login
   async createAccount(email, password, name) {
     try {
       const userAccount = await this.account.create(
@@ -20,31 +22,35 @@ export class AuthService {
         password,
         name
       );
+
       if (userAccount) {
-        // Call another function after successful account creation
-        return this.login(email, password);
-      } else {
-        return userAccount;
+        return this.login(email, password); // auto login
       }
+      return userAccount;
     } catch (error) {
       throw error;
     }
   }
+
+  // LOGIN (Updated for latest Appwrite)
   async login(email, password) {
     try {
-      return await this.account.createEmailSession(email, password);
+      return await this.account.createEmailPasswordSession(email, password);
     } catch (error) {
       throw error;
     }
   }
-  async geyCurrentUser() {
+
+  // Get Current Logged User
+  async getCurrentUser() {
     try {
       return await this.account.get();
     } catch (error) {
-      throw error;
+      return null;
     }
-    return null;
   }
+
+  // Logout (all sessions)
   async logout() {
     try {
       return await this.account.deleteSessions();
@@ -55,5 +61,4 @@ export class AuthService {
 }
 
 const authService = new AuthService();
-
 export default authService;
